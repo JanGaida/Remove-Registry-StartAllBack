@@ -140,7 +140,7 @@ function Interactive-Delete-SingleMode() {
         }
 
         if ($shouldDelete) {
-            Write-Host 'Deleting '+($idx+1)+'/'+($canditates.length)+': '+($canditates[$idx])
+            Write-Host 'Deleting '($idx+1)'/'($canditates.length)': '($canditates[$idx])
             Remove-Item -Path ('Registry::'+$canditates[$idx]) -Force
         }
         else {
