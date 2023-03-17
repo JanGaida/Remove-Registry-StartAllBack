@@ -17,14 +17,14 @@
 #####
 #
 # What is this:
-#     This is a small script helping to fully remove StartAllback from windows
+#     This is a small script helping to fully remove StartAllBack from windows
 #     by search for a empty registy key in "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID"
 #
 # How to use:
 #     powershell -executionpolicy bypass -file {PATH_TO_THIS_PS1_SCRIPT}
 #
 # Example:
-#     powershell -executionpolicy bypass -file C:\Users\jan\Desktop\Remove-Reg-StartAllback.ps1
+#     powershell -executionpolicy bypass -file .\Remove-Registry-StartAllBack.ps1
 #
 # Requirements:
 #     - Powershell v7.3+: Install/Upgrade Powershell with "winget install Microsoft.PowerShell"
