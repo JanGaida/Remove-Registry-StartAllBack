@@ -50,6 +50,7 @@ powershell -executionpolicy bypass -file .\Schedule-Remove-Registry-StartAllBack
 <img src="https://raw.githubusercontent.com/JanGaida/Remove-Registry-StartAllBack/main/Screenshots/Screenshot__Schedule-Remove-Registry-StartAllBack.ps1.png" width="75%">
 </p>
 
+<br/>
 
 ## 🛟 Requirements:
 
