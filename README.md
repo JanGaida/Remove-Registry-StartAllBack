@@ -21,6 +21,10 @@ powershell -executionpolicy bypass -file .\Remove-Reg-StartAllback.ps1
 
 ### ⏰ Regularly usage:
 
+```
+⚠️ Warning: Might delete addtional registry-entires without user-interaction; try 'One-Time usage' before and use with caution.
+```
+
 1. Grab the PowerShell-Scripts (named 'Remove-Registry-StartAllBack.ps1' and 'Schedule-Remove-Registry-StartAllBack') and place them in the same directory somewhere (ie. *'C:\Program Files\StartAllBack\Remove-Registry-StartAllBack'*)
 2. Open a new (Power)Shell ideally with administrator privileges (**not required**) and change the directory to the directory which contains the script-files
 3. Execute the scheduler-script with - you might want to change certain parameters (like the trigger-time) either via the windows's taskscheduler-userinterface or by giving certain parameters to the scheduler-script (like 'AtTime 8pm'):
