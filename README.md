@@ -18,6 +18,10 @@ powershell -executionpolicy bypass -file .\Remove-Reg-StartAllback.ps1
 ```
 4. Continue following the instructions (Press CTRL+C to force quit)
 
+#### Screenshot:
+![Screenshot of the powershell-cli running the schedule-script](https://raw.githubusercontent.com/JanGaida/Remove-Registry-StartAllBack/main/Screenshots/Screenshot__Remove-Registry-StartAllBack.png)
+
+---
 
 ### ⏰ Regularly usage:
 
@@ -32,6 +36,9 @@ powershell -executionpolicy bypass -file .\Remove-Reg-StartAllback.ps1
 powershell -executionpolicy bypass -file .\Schedule-Remove-Registry-StartAllBack.ps1
 ```
 4. Confirm/Edit the settings in the opened windows's taskscheduler-window
+
+#### Screenshot:
+![Screenshot of the powershell-cli running the schedule-script](https://raw.githubusercontent.com/JanGaida/Remove-Registry-StartAllBack/main/Screenshots/Screenshot__Schedule-Remove-Registry-StartAllBack.ps1.png)
 
 ## Requirements:
 
