@@ -33,16 +33,69 @@
 #####
 
 param(
+    # wether to run this script without any user-interaction, defaults to false if not 'TRUE' or 'T' or '1'
     [Parameter(Mandatory=$False)]
-    [string] $Automatic = "",
+    [string] $Automate = "",
 
+    # the root-registry-directory, will eventually default to 'HKEY_CURRENT_USER'
     [Parameter(Mandatory=$False)]
     [string] $HKEY = ""
-
 )
-$Automatic = $Automatic.ToUpper().Trim()
-$_Automatic = (($Automatic -eq "TRUE") -or ($Automatic -eq "1"))
 
+# ps-config
+$ErrorActionPreference = "Stop"
+
+# quickly transform user-input
+$Automate = $Automate.ToUpper().Trim()
+$_Automatic = ($Automatic -eq "TRUE") -or ($Automatic -eq "1") -or ($Automatic -eq "T")
+
+#
+# Helper to print out the leading-message
+#
+function Print-Headers() {
+    Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---' -ForegroundColor DarkCyan
+    Write-Host ''
+    Write-Host '      Remove-Registry-StartAllBack' -ForegroundColor DarkCyan -NoNewline
+    Write-Host ' - v1.1.1' -ForegroundColor DarkGray
+    Write-Host ''
+    Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---' -ForegroundColor DarkCyan
+    Write-Host ''
+    Write-Host ' ' -NoNewline
+    Write-Host ' WARN: ' -NoNewline -ForegroundColor DarkRed -BackgroundColor DarkYellow
+    Write-Host ' This software searches the windows registry and deletes on demand certain entries from it'
+    Write-Host '         if you are unsure about the implications create a backup of the entries located at '
+    Write-Host ('         "' + $(Get-RegistryPath-CLSID-All) + '"') -ForegroundColor Cyan
+    Write-Host '         or abort this script anytime using ' -NoNewline
+    Write-Host 'CTRL + C' -ForegroundColor Red
+    Write-Host ''
+    Write-Host ''
+    Write-Host ' Copyright 2023 Jan Gaida'
+    Write-Host ' Latest version: ' -NoNewline
+    Write-Host 'https://github.com/JanGaida/Remove-Registry-StartAllBack' -ForegroundColor DarkCyan
+    Write-Host ''
+    Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---' -ForegroundColor DarkCyan
+    Write-Host ''
+}
+
+#
+# Helper to print out the finish-message
+#
+function Print-Finish() {
+    Write-Host ''
+    Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---' -ForegroundColor DarkCyan
+    Write-Host ''
+    Write-Host '> Finished' -ForegroundColor DarkCyan
+    Write-Host ''
+    Write-Host '  All candidates processed.'
+    Write-Host '  Operation completed ' -NoNewline
+    Write-Host 'successfully' -NoNewline -ForegroundColor Green
+    Write-Host '.'
+    Write-Host ''
+}
+
+#
+# Helper to determine the fs-registry-fullpath
+#
 function Get-RegistryPath-CLSID-All() {
     if ([string]::IsNullOrEmpty($HKEY)) {
         return 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\CLSID\*'     
@@ -51,20 +104,15 @@ function Get-RegistryPath-CLSID-All() {
     }
 }
 
-function Print-Headers() {
-    Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---'
-    Write-Host ''
-    Write-Host ' Clear StartAllblack-Registry'
-    Write-Host ''
-    Write-Host ' Copyright 2023 Jan Gaida'
-    Write-Host ''
-    Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---'
-    Write-Host ''
-}
-
+#
+# Determines the list of potential registry-candiates
+#
 function Search-Registry() {
     $regPath = Get-RegistryPath-CLSID-All
-    Write-Host ('Searching registry at "' + $regPath + '" ...')
+    Write-Host '> Searching ' -NoNewline -ForegroundColor DarkCyan
+    Write-Host 'at ' -NoNewline
+    Write-Host ('"' + $regPath + '"') -ForegroundColor Cyan
+
     $keys = Get-ChildItem -Path ($regPath) | Select-Object -ExpandProperty Name
     $canditates = @()
 
@@ -91,121 +139,242 @@ function Search-Registry() {
 
     if ($canditates.Count -eq 0) {
         Write-Host ''
-        Write-Host 'Aborting operation since no potential canditates have been found.'
+        Write-Host '> Aborting ' -NoNewline -ForegroundColor Red
+        Write-Host 'operation since ' -NoNewline
+        Write-Host 'no potential canditate(s) ' -NoNewline -ForegroundColor Red
+        Write-Host 'have been found.'
+        Write-Host ''
         Exit 0
     }
 
     Write-Host ''
-    Write-Host ('Detected '+$canditates.Count+' potential candidate(s):')
-    $script:canditates = $canditates
+    Write-Host '> Detected ' -NoNewline -ForegroundColor DarkCyan
+    Write-Host $canditates.Count -NoNewline -ForegroundColor Cyan
+    if ($canditates.Count -eq 1) {
+        Write-Host ' potential candidate:'
+    } else {
+        Write-Host ' potential candidates:'
+    }
+    Write-Host ''
+    
     $idx = 0
     while ($idx -lt $canditates.length){ 
-        Write-Host '  [ '($idx + 1)' ]: '$canditates[$idx]
+        Write-Host '  [ ' -NoNewline
+        Write-Host ($idx + 1) -NoNewline -ForegroundColor Cyan
+        Write-Host ' ]: ' -NoNewline
+        Write-Host ('"' + $canditates[$idx] + '"') -ForegroundColor Cyan
         $idx++
     }
+    
+    if ($canditates.Count -eq 1) {
+        Write-Host ''
+        Write-Host ' '-NoNewline
+        Write-Host ' INFO: ' -NoNewline -BackgroundColor DarkGreen -ForegroundColor White
+        Write-Host ' There is relatively ' -NoNewline
+        Write-Host 'high confidence ' -NoNewline  -ForegroundColor DarkGreen
+        Write-Host 'that given key is created from StartAllBack.'
+    } else {
+        Write-Host ''
+        Write-Host ' '-NoNewline
+        Write-Host ' WARN: ' -NoNewline -ForegroundColor DarkRed -BackgroundColor DarkYellow
+        Write-Host ' There is relatively ' -NoNewline
+        Write-Host 'low confidence ' -NoNewline -ForegroundColor Red
+        Write-Host 'that given key is created from StartAllBack.'
+        Write-Host ' '-NoNewline
+        Write-Host ' WARN: ' -NoNewline -ForegroundColor DarkRed -BackgroundColor DarkYellow
+        Write-Host ' Its recommended to create a ' -NoNewline
+        Write-Host 'backup ' -NoNewline -ForegroundColor Red
+        Write-Host 'of each registry-key and try each to remove each element in ' -NoNewline
+        Write-Host 'single-mode' -NoNewline -ForegroundColor Red
+        Write-Host '!'
+    }
+
+    $script:canditates = $canditates
 }
 
-function Interactive-Delete-Yolo() {
-    Write-Host ''
-    $canditates = $script:canditates
-    $idx = 0
-    while ($idx -lt $canditates.length){
-        Write-Host ('Deleting '+($idx+1)+'/'+$canditates.length+': '+$canditates[$idx])
-        Remove-Item -Path ('Registry::'+$canditates[$idx]) -Force
-        $idx++
-    }
-    
-    Write-Host ''
-    Write-Host 'All candidates processed.'
-    Write-Host 'Operation completed successfully.'
-}  
-
-function Interactive-Delete-SingleMode() {
-    Write-Host ''
-    $canditates = $script:canditates
-    $idx = 0
-    while ($idx -lt $canditates.length){
-        Write-Host ''
-        Write-Host 'Delete canditate ['($idx+1)']: '($canditates[$idx])'?'
-        Write-Host '[Y]es or [No]?'
-        $shouldDelete = $false
-        while ($true) {
-            Write-Host ''
-            $ui = Read-Host
-            Write-Host ''
-            $ui = $ui.ToLower().Trim()
-            
-            if ($ui -eq 'y') {
-                $shouldDelete = $true
-                break
-            }
-            if ($ui -eq 'n') {
-                $shouldDelete = $false
-                break
-            }
-            Write-Host 'Invalid input. Please try again.'
-            Write-Host ''
-        }
-
-        if ($shouldDelete) {
-            Write-Host 'Deleting '($idx+1)'/'($canditates.length)': '($canditates[$idx])
-            Remove-Item -Path ('Registry::'+$canditates[$idx]) -Force
-        }
-        else {
-            Write-Host 'Keeping canditate ['($idx+1)']'
-        }
-
-        $idx++
-    }
-    
-    Write-Host ''
-    Write-Host 'All candidates processed.'
-    Write-Host 'Operation completed successfully.'
-    Write-Host ''
-}  
-
+#
+# Asks the user how to handle the candidates  
+#
 function Interactive-Delete() {
     Write-Host ''
-    Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---'
+    Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---' -ForegroundColor DarkCyan
     Write-Host ''
-    Write-Host 'Try [A]ll at once, follow up in [S]ingle-Mode or [C]ancel this operation ? Confirm your choice with ENTER'
-    Write-Host ''
+    Write-Host '> Choose' -NoNewline -ForegroundColor DarkCyan
+    if ($script:canditates.length -eq 1) {
+        Write-Host ' how to handle the candiate:'
+    } else {
+        Write-Host ' how to handle the candiates:'
+    }
 
+    Write-Host ''
+    # option all
+    Write-Host '    A' -NoNewline -ForegroundColor Cyan
+    Write-Host 'll-at-once : ' -NoNewline 
+    Write-Host 'Deletes all without addtional user-interaction' -ForegroundColor DarkGray
+    # option single
+    Write-Host '    ' -NoNewline
+    Write-Host 'S' -NoNewline -ForegroundColor Cyan
+    Write-Host 'ingle-mode : ' -NoNewline 
+    Write-Host 'Asks how to handle each candiate seperately' -ForegroundColor DarkGray
+    # option cancel
+    Write-Host '    C' -NoNewline -ForegroundColor Cyan
+    Write-Host 'ancel      : ' -NoNewline 
+    Write-Host 'Aborts this script' -ForegroundColor DarkGray
+    Write-Host ''
+    # call-to-action
+    Write-Host ' Type the highlighted first letter ' -NoNewline -BackgroundColor White -ForegroundColor Black
+    Write-Host ' A ' -NoNewline -ForegroundColor Black -BackgroundColor Cyan
+    Write-Host ', ' -NoNewline -BackgroundColor White -ForegroundColor Black
+    Write-Host ' S ' -NoNewline -ForegroundColor Black -BackgroundColor Cyan
+    Write-Host ' or ' -NoNewline -BackgroundColor White -ForegroundColor Black
+    Write-Host ' C ' -NoNewline -ForegroundColor Black -BackgroundColor Cyan
+    Write-Host ' and confirm your choice by pressing ' -NoNewline -BackgroundColor White -ForegroundColor Black
+    Write-Host ' ENTER ' -NoNewline -ForegroundColor White -BackgroundColor DarkBlue
+    Write-Host '. ' -BackgroundColor White -ForegroundColor Black
+    Write-Host ''
 
     if ($_Automatic) {
         Interactive-Delete-Yolo
     } else {
         while ($true) {
-    
+   
             $ui = Read-Host
             Write-Host ''
             $ui = $ui.ToLower().Trim()
             if ($ui -eq "C") {
-                Write-Host 'Operation is canceled.'
+                Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---' -ForegroundColor DarkCyan
+                Write-Host ''
+                Write-Host '> Aborting ' -NoNewline -ForegroundColor Red
+                Write-Host 'operation upon user-request. ' -NoNewline
+                Write-Host 'No changes ' -NoNewline -ForegroundColor Red
+                Write-Host 'have been made!'
+                Write-Host ''
                 Exit 0
             } 
             if ($ui -eq "A") {
-                Write-Host 'YOLO ...'
+                Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---' -ForegroundColor DarkCyan
                 Write-Host ''
-                Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---'
+                Write-Host '> Executing ' -ForegroundColor DarkCyan -NoNewline
+                Write-Host 'All-at-once' -ForegroundColor Cyan
                 Interactive-Delete-Yolo
                 break
             }
             if ($ui -eq "S") {
-                Write-Host 'Starting Single-Mode...'
+                Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---' -ForegroundColor DarkCyan
                 Write-Host ''
-                Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---'
+                Write-Host '> Executing ' -ForegroundColor DarkCyan -NoNewline
+                Write-Host 'Single-mode' -ForegroundColor Cyan
                 Interactive-Delete-SingleMode
                 break
             }
 
-            Write-Host 'Invalid input. Please try again.'
+            Write-Host '> Invalid input. ' -ForegroundColor DarkRed -BackgroundColor DarkYellow
+            Write-Host 'Please try again by either typing their first letter'
+            Write-Host 'or abort with ' -NoNewline
+            Write-Host 'CTRL + C' -ForegroundColor Red
+            Write-Host ''
         }
     }
 }
 
+#
+# Loops all candidates and deletes them without user-interaction
+#
+function Interactive-Delete-Yolo() {
+    Write-Host ''
+    $canditates = $script:canditates
+    $idx = 0
+    while ($idx -lt $canditates.length){
+        Write-Host '> Deleting ' -NoNewline -ForegroundColor DarkCyan
+        Write-Host 'canditate [ ' -NoNewline
+        Write-Host ($idx + 1) -NoNewline -ForegroundColor Cyan
+        Write-Host ' ]: ' -NoNewline
+        Write-Host ('"' + $canditates[$idx] + '"') -ForegroundColor Cyan
+        Remove-Item -Path ('Registry::'+$canditates[$idx]) -Force
+        $idx++
+    }
+}  
+
+#
+# Loops all candidates and deletes them upon user-request
+#
+function Interactive-Delete-SingleMode() {
+    $canditates = $script:canditates
+    $idx = 0
+    while ($idx -lt $canditates.length){
+        Write-Host ''
+        Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---' -ForegroundColor DarkCyan
+        Write-Host ''
+        Write-Host '> Delete' -NoNewline -ForegroundColor DarkCyan
+        Write-Host ' canditate [ ' -NoNewline
+        Write-Host ($idx+1) -NoNewline -ForegroundColor Cyan
+        Write-Host ' ] ?'
+        Write-Host '  [ ' -NoNewline
+        Write-Host ($idx + 1) -NoNewline -ForegroundColor Cyan
+        Write-Host ' ]: ' -NoNewline
+        Write-Host ('"' + $canditates[$idx] + '"') -ForegroundColor Cyan
+        Write-Host ''
+        # call-to-action
+        Write-Host ' Type ' -NoNewline -BackgroundColor White -ForegroundColor Black
+        Write-Host ' D ' -NoNewline -ForegroundColor White -BackgroundColor DarkRed
+        Write-Host ' to delete it ' -NoNewline -BackgroundColor White -ForegroundColor Black
+        Write-Host 'or ' -NoNewline -BackgroundColor White -ForegroundColor Black
+        Write-Host ' K ' -NoNewline -ForegroundColor White -BackgroundColor DarkGreen
+        Write-Host ' to keep it and confirm your choice by pressing ' -NoNewline -BackgroundColor White -ForegroundColor Black
+        Write-Host ' ENTER ' -NoNewline -ForegroundColor White -BackgroundColor DarkBlue
+        Write-Host '. ' -BackgroundColor White -ForegroundColor Black
+        
+        $shouldDelete = $false
+        while ($true) {
+            Write-Host ''
+            $ui = Read-Host
+            $ui = $ui.ToLower().Trim()
+            
+            if ($ui -eq 'd') {
+                $shouldDelete = $true
+                break
+            }
+            if ($ui -eq 'k') {
+                $shouldDelete = $false
+                break
+            }
+            Write-Host ''
+            Write-Host '> Invalid input. ' -ForegroundColor DarkRed -BackgroundColor DarkYellow
+            Write-Host 'Please try again by either typing D to delete the candiate or K to keep it '
+            Write-Host 'or abort with ' -NoNewline
+            Write-Host 'CTRL + C' -ForegroundColor Red
+        }
+
+        if ($shouldDelete) {
+            Write-Host ''
+            Write-Host '> Deleting ' -NoNewline -ForegroundColor DarkCyan
+            Write-Host 'canditate [ ' -NoNewline
+            Write-Host ($idx + 1) -NoNewline -ForegroundColor Cyan
+            Write-Host ' ]'
+            Remove-Item -Path ('Registry::'+$canditates[$idx]) -Force
+        }
+        else {
+            Write-Host ''
+            Write-Host '> Keeping ' -NoNewline -ForegroundColor DarkCyan
+            Write-Host 'canditate [ ' -NoNewline
+            Write-Host ($idx + 1) -NoNewline -ForegroundColor Cyan
+            Write-Host ' ]'
+        }
+
+        $idx++
+    }
+    
+    # done
+    Print-Finish
+}  
+
+#
 # Flow
+#
 Print-Headers
 Search-Registry
 Interactive-Delete
+
+# for debuging restart explorer to force the creation of the next token
+#stop-process -name explorer –force
 Exit 0
