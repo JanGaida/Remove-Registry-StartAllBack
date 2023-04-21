@@ -8,7 +8,7 @@ Helps removing registry entries made by StartAllBack.
 
 ## How-To-Use:
 
-### One-Time usage:
+### 🧰 One-Time usage:
 
 1. Grab the PowerShell-Script (named 'Remove-Registry-StartAllBack.ps1') and place it somewhere
 2. Open a new (Power)Shell ideally with administrator privileges (**not required**) and change the directory to the directory which contains the script-file
@@ -19,7 +19,7 @@ powershell -executionpolicy bypass -file .\Remove-Reg-StartAllback.ps1
 4. Continue following the instructions (Press CTRL+C to force quit)
 
 
-### Regularly usage:
+### 🕗 Regularly usage:
 
 1. Grab the PowerShell-Scripts (named 'Remove-Registry-StartAllBack.ps1' and 'Schedule-Remove-Registry-StartAllBack') and place it in the same directory somewhere 
 2. Open a new (Power)Shell ideally with administrator privileges (**not required**) and change the directory to the directory which contains the script-files
