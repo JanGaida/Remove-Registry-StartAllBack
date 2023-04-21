@@ -27,7 +27,7 @@ powershell -executionpolicy bypass -file .\Remove-Reg-StartAllback.ps1
 ```
 powershell -executionpolicy bypass -file .\Schedule-Remove-Registry-StartAllBack.ps1
 ```
-4. Confirm/Edits the settings in the opened windows's taskscheduler-window
+4. Confirm/Edit the settings in the opened windows's taskscheduler-window
 
 ## Requirements:
 
