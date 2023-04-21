@@ -25,7 +25,7 @@
 #
 # Example:
 #     powershell -executionpolicy bypass -file .\Remove-Registry-StartAllBack.ps1
-#     powershell -executionpolicy bypass -file .\Remove-Registry-StartAllBack.ps1 -Automatic True
+#     powershell -executionpolicy bypass -file .\Remove-Registry-StartAllBack.ps1 -Automate True
 #
 # Requirements:
 #     - Powershell v7.3+: Install/Upgrade Powershell with "winget install Microsoft.PowerShell"
@@ -47,7 +47,7 @@ $ErrorActionPreference = "Stop"
 
 # quickly transform user-input
 $Automate = $Automate.ToUpper().Trim()
-$_Automatic = ($Automatic -eq "TRUE") -or ($Automatic -eq "1") -or ($Automatic -eq "T")
+$_Automatic = ($Automate -eq "TRUE") -or ($Automate -eq "1") -or ($Automate -eq "T")
 
 #
 # Helper to print out the leading-message

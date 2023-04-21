@@ -25,7 +25,7 @@
 #
 # Example:
 #     powershell -executionpolicy bypass -file .\Schedule-Remove-Registry-StartAllBack.ps1
-#     powershell -executionpolicy bypass -file .\Schedule-Remove-Registry-StartAllBack.ps1 -DaysInterval 50 -AtTime 12pm
+#     powershell -executionpolicy bypass -file .\Schedule-Remove-Registry-StartAllBack.ps1 -FireTime 12:00 -TaskName MyName
 #
 # Requirements:
 #     - Powershell v7.3+: Install/Upgrade Powershell with "winget install Microsoft.PowerShell"
