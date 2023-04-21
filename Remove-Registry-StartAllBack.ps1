@@ -25,6 +25,7 @@
 #
 # Example:
 #     powershell -executionpolicy bypass -file .\Remove-Registry-StartAllBack.ps1
+#     powershell -executionpolicy bypass -file .\Remove-Registry-StartAllBack.ps1 -Automatic True
 #
 # Requirements:
 #     - Powershell v7.3+: Install/Upgrade Powershell with "winget install Microsoft.PowerShell"
@@ -32,8 +33,15 @@
 #####
 
 param(
+    [Parameter(Mandatory=$False)]
+    [string] $Automatic = "",
+
+    [Parameter(Mandatory=$False)]
     [string] $HKEY = ""
+
 )
+$Automatic = $Automatic.ToUpper().Trim()
+$_Automatic = (($Automatic -eq "TRUE") -or ($Automatic -eq "1"))
 
 function Get-RegistryPath-CLSID-All() {
     if ([string]::IsNullOrEmpty($HKEY)) {
@@ -163,31 +171,36 @@ function Interactive-Delete() {
     Write-Host 'Try [A]ll at once, follow up in [S]ingle-Mode or [C]ancel this operation ? Confirm your choice with ENTER'
     Write-Host ''
 
-    while ($true) {
-    
-        $ui = Read-Host
-        Write-Host ''
-        $ui = $ui.ToLower().Trim()
-        if ($ui -eq "C") {
-            Write-Host 'Operation is canceled.'
-            Exit 0
-        } 
-        if ($ui -eq "A") {
-            Write-Host 'YOLO ...'
-            Write-Host ''
-            Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---'
-            Interactive-Delete-Yolo
-            break
-        }
-        if ($ui -eq "S") {
-            Write-Host 'Starting Single-Mode...'
-            Write-Host ''
-            Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---'
-            Interactive-Delete-SingleMode
-            break
-        }
 
-        Write-Host 'Invalid input. Please try again.'
+    if ($_Automatic) {
+        Interactive-Delete-Yolo
+    } else {
+        while ($true) {
+    
+            $ui = Read-Host
+            Write-Host ''
+            $ui = $ui.ToLower().Trim()
+            if ($ui -eq "C") {
+                Write-Host 'Operation is canceled.'
+                Exit 0
+            } 
+            if ($ui -eq "A") {
+                Write-Host 'YOLO ...'
+                Write-Host ''
+                Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---'
+                Interactive-Delete-Yolo
+                break
+            }
+            if ($ui -eq "S") {
+                Write-Host 'Starting Single-Mode...'
+                Write-Host ''
+                Write-Host '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---'
+                Interactive-Delete-SingleMode
+                break
+            }
+
+            Write-Host 'Invalid input. Please try again.'
+        }
     }
 }
 
