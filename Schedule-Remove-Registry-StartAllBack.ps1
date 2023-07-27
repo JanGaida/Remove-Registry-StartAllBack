@@ -156,7 +156,7 @@ function Schedule-Task() {
     Write-Host '> Creating ' -ForegroundColor DarkCyan -NoNewline
     Write-Host 'a new scheduler-task'
     $TaskExecute = "powershell"
-    $TaskArguments = "-executionpolicy $ExecutionPolicy -file $ScriptLocation -Automatic True"
+    $TaskArguments = "-executionpolicy $ExecutionPolicy -file `"$ScriptLocation`" -Automatic True"
     $TaskAction = New-ScheduledTaskAction -Execute $TaskExecute -Argument $TaskArguments
     
     Write-Host ' INFO: ' -NoNewline -ForegroundColor White -BackgroundColor DarkGreen
